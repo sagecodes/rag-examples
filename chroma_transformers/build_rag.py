@@ -54,8 +54,11 @@ print(f"🔹 Prepared {len(docs):,} chunks for embedding")
 embed_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2").to("cuda")
 vectors = embed_model.encode(docs, device="cuda", show_progress_bar=True)
 
-client = chromadb.Client(Settings(allow_reset=True))
-client.reset()  # Optional: clears all collections
+# client = chromadb.Client(Settings(allow_reset=True))
+# client.reset()  # Optional: clears all collections
+client = chromadb.PersistentClient(path="./chroma_store")
+
+
 
 collection = client.get_or_create_collection(name="bioasq_passages")
 
@@ -70,37 +73,38 @@ for i in range(0, len(docs), batch):
 print("✅ Chroma collection ready!")
 
 
-# -----------------------------------------------------------
-# Simple retrieval wrapper
-# -----------------------------------------------------------
-def retrieve(question: str, k: int = 5):
-    res = collection.query(query_texts=[question], n_results=k)
-    return res["documents"][0]
+# # -----------------------------------------------------------
+# # Simple retrieval wrapper
+# # -----------------------------------------------------------
+# def retrieve(question: str, k: int = 5):
+#     res = collection.query(query_texts=[question], n_results=k)
+#     return res["documents"][0]
 
 
-# -----------------------------------------------------------
-# Generation with FLAN-T5
-# -----------------------------------------------------------
-generator = pipeline(
-    "text2text-generation",
-    model="google/flan-t5-base",
-    max_new_tokens=128
-)
+# # -----------------------------------------------------------
+# # Generation with FLAN-T5
+# # -----------------------------------------------------------
+# generator = pipeline(
+#     "text2text-generation",
+#     model="google/flan-t5-base",
+#     max_new_tokens=328
+# )
 
-def rag_answer(question: str, k: int = 5) -> str:
-    context_chunks = retrieve(question, k)
-    prompt = "Answer the biomedical question factually using ONLY the context.\n\n"
-    for i, chunk in enumerate(context_chunks, 1):
-        prompt += f"[Context {i}]\n{chunk}\n\n"
-    prompt += f"Question: {question}\nAnswer:"
-    return generator(prompt, truncation=True)[0]["generated_text"]
+# def rag_answer(question: str, k: int = 5) -> str:
+#     context_chunks = retrieve(question, k)
+#     prompt = "Answer the biomedical question factually using ONLY the context.\n\n"
+#     for i, chunk in enumerate(context_chunks, 1):
+#         prompt += f"[Context {i}]\n{chunk}\n\n"
+#     prompt += f"Question: {question}"
+#     answer = generator(prompt, truncation=True)[0]["generated_text"]
+#     return f"Answer: {answer.strip()} \n\n prompt: {prompt.strip()}"
 
 
-# -----------------------------------------------------------
-# Demo
-# -----------------------------------------------------------
-sample_q = qa_ds[0]["question"]
-print("📝 Question:", sample_q)
-print("💡 RAG answer:", rag_answer(sample_q))
+# # -----------------------------------------------------------
+# # Demo
+# # -----------------------------------------------------------
+# # sample_q = qa_ds[0]["question"]
+# # print("📝 Question:", "What is Hirschsprung disease?")
+# print("💡 RAG answer:", rag_answer("What is Hirschsprung disease?"))
 
-# python chroma_transformers/rag.py
+# python chroma_transformers/build_rag.py
