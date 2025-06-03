@@ -1,3 +1,5 @@
 .venv
 /.venv
 chroma_store
+weaviate_bioasq
+/weaviate_bioasq
