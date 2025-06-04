@@ -60,3 +60,9 @@ else:
     print("✅ Vector store already exists. Skipping rebuild.")
 
 client.close()
+
+# python weaviate_embed/build_rag.py
+
+
+
+
