@@ -46,7 +46,7 @@ demo = gr.Interface(
     fn=rag_answer,
     inputs=[
         gr.Textbox(label="Ask a biomedical question"),
-        gr.Slider(minimum=1, maximum=10, value=3, label="Top K Documents"),
+        gr.Slider(minimum=1, maximum=10, value=3, step=1, label="Top K Documents"),
         gr.Checkbox(label="Show Retrieved Chunks", value=True),
     ],
     outputs=gr.Textbox(label="Answer"),
